@@ -8,11 +8,11 @@ from flask import Flask, jsonify, make_response, redirect, request, url_for
 from prometheus_flask_exporter import PrometheusMetrics
 from psycopg2 import Error
 
-db_name = os.environ.get("DB_NAME")
-db_user = os.environ.get("DB_USER")
-db_pass = os.environ.get("DB_PASSWORD")
-db_host = os.environ.get("DB_HOST")
-db_port = os.environ.get("DB_PORT")
+db_name = os.environ.get("DB_NAME").rstrip()
+db_user = os.environ.get("DB_USER").rstrip()
+db_pass = os.environ.get("DB_PASSWORD").rstrip()
+db_host = os.environ.get("DB_HOST").rstrip()
+db_port = os.environ.get("DB_PORT").rstrip()
 db_table = "BLACKLIST"
 
 # test
@@ -26,7 +26,16 @@ db_table = "BLACKLIST"
 
 def _connect_to_db():
     conn = psycopg2.connect(
-        database=db_name, user=db_user, password=db_pass, host=db_host, port=db_port
+        dbname=db_name,
+        user=db_user,
+        password=db_pass,
+        host=db_host,
+        port=db_port,
+        connect_timeout=3,
+        keepalives=1,
+        keepalives_idle=5,
+        keepalives_interval=2,
+        keepalives_count=2,
     )
     return conn
 
@@ -51,7 +60,7 @@ def _create_table():
         if conn:
             cursor.close()
             conn.close()
-            logging.info("Connection to PostgreSQL closed")
+            logging.info("Initial connection to PostgreSQL closed")
 
 
 def _insert_data_to_table(ip, date, path):

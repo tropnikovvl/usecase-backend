@@ -5,20 +5,27 @@ USER root
 RUN useradd -ms /bin/bash customuser
 
 RUN \
-  apt-get update && apt-get install -y --no-install-recommends \
-  libpq-dev gcc libc-dev
+  apt-get update && \
+  apt-get install -y libpq-dev gcc python3-psycopg2 && \
+  apt-get clean
 
 USER customuser
 
 WORKDIR /app
 
-ENV PATH="${PATH}:/home/customuser/.local/bin"
+ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt requirements.txt
+ENV VIRTUAL_ENV=/home/customuser/venv
+
+RUN python3 -m venv $VIRTUAL_ENV
+
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY requirements.txt .
 
 RUN \
   /usr/local/bin/python3 -m pip install --upgrade pip && \
-  pip3 install -r requirements.txt
+  pip --no-cache-dir install -r requirements.txt
 
 COPY app .
 
