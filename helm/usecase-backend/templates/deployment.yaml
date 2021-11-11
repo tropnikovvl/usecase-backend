@@ -1,3 +1,4 @@
+{{- $dot := . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,9 +34,20 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.env }}
           env:
-            {{- toYaml . | nindent 12 }}
+          {{- range $k, $v := .Values.ConfigMap }}
+            - name: {{ $k }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "usecase-backend.fullname" $dot }}
+                  key: {{ $k }}
+          {{- end }}
+          {{- range $k, $v := .Values.Secret }}
+            - name: {{ $k }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "usecase-backend.fullname" $dot }}
+                  key: {{ $k }}
           {{- end }}
           ports:
             - name: http

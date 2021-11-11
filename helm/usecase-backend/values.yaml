@@ -81,29 +81,11 @@ tolerations: []
 
 affinity: {}
 
-env:
-  - name: DB_USER
-    valueFrom:
-      secretKeyRef:
-        name: dev-back-secret
-        key: DB_USER
-  - name: DB_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: dev-back-secret
-        key: DB_PASSWORD
-  - name: DB_NAME
-    valueFrom:
-      configMapKeyRef:
-        name: dev-back-config
-        key: DB_NAME
-  - name: DB_HOST
-    valueFrom:
-      configMapKeyRef:
-        name: dev-back-config
-        key: DB_HOST
-  - name: DB_PORT
-    valueFrom:
-      configMapKeyRef:
-        name: dev-back-config
-        key: DB_PORT
+Secret:
+  DB_USER: c3RvbG9uCg==
+  DB_PASSWORD: c3RvbG9uCg==
+
+ConfigMap:
+  DB_NAME: "simple_db"
+  DB_HOST: "stolon-proxy"
+  DB_PORT: "5432"
