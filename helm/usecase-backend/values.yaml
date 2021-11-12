@@ -8,7 +8,7 @@ image:
   repository: tropnikovvl/usecase-backend
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: v21
+  tag: v28
 
 imagePullSecrets: []
 nameOverride: ""
@@ -94,3 +94,8 @@ ConfigMap:
   MAIL_SERVER: "smtp.yandex.ru"
   MAIL_PORT: "587"
   MAIL_RECIPIENT: "blacklisteddev@yandex.com"
+  MAIL_USE_TLS: "True"
+  MAIL_USE_SSL: "False"
+
+victoriametrics_monitoring:
+  enabled: true

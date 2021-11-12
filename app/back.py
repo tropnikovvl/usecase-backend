@@ -21,6 +21,9 @@ mail_port = int(os.environ.get("MAIL_PORT").rstrip())
 mail_username = os.environ.get("MAIL_USERNAME").rstrip()
 mail_password = os.environ.get("MAIL_PASSWORD").rstrip()
 mail_recipient = os.environ.get("MAIL_RECIPIENT").rstrip()
+mail_use_tls = eval(os.environ.get("MAIL_USE_TLS").rstrip())
+mail_use_ssl = eval(os.environ.get("MAIL_USE_SSL").rstrip())
+
 
 # test
 
@@ -132,30 +135,20 @@ def _delete_rows_from_table(ip):
             logging.info("Connection to PostgreSQL closed")
 
 
-def _send_email_block(ip):
-    msg = Message(
-        subject="Block IP",
-        recipients=[mail_recipient],
-        body=(f"Ip {ip} has been blocked"),
-        sender=mail_username,
-    )
-    with app.app_context():
-        mail.send(msg)
-    logging.info("Email has been send")
-    return "Message sent!"
-
-
-def _send_email_unblock(ip):
-    msg = Message(
-        subject="Unblock IP",
-        recipients=[mail_recipient],
-        body=(f"Ip {ip} has been unblocked"),
-        sender=mail_username,
-    )
-    with app.app_context():
-        mail.send(msg)
-    logging.info("Email has been send")
-    return "Message sent!"
+def _send_email(subject, body):
+    try:
+        msg = Message(
+            subject=subject,
+            recipients=[mail_recipient],
+            body=body,
+            sender=mail_username,
+        )
+        with app.app_context():
+            mail.send(msg)
+        logging.info("Email has been send")
+    except (Exception, Error) as error:
+        logging.info("Error while working with Mail", error)
+    return "OK"
 
 
 app = Flask(__name__)
@@ -165,8 +158,8 @@ app.config["MAIL_SERVER"] = mail_server
 app.config["MAIL_PORT"] = mail_port
 app.config["MAIL_USERNAME"] = mail_username
 app.config["MAIL_PASSWORD"] = mail_password
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USE_SSL"] = False
+app.config["MAIL_USE_TLS"] = mail_use_tls
+app.config["MAIL_USE_SSL"] = mail_use_ssl
 
 mail = Mail(app)
 
@@ -185,10 +178,12 @@ def healthz():
 def add_to_blacklist():
     input_json = request.get_json(force=True)
     ip = input_json["ip"]
+    body = f"Ip {ip} has been blocked"
     date = input_json["date"]
     path = input_json["path"]
     _insert_data_to_table(ip, date, path)
-    _send_email_block(ip)
+    subject = "Block IP"
+    _send_email(subject, body)
     return make_response(jsonify(input_json), 200)
 
 
@@ -208,8 +203,10 @@ def debug():
 def unlock():
     input_json = request.get_json(force=True)
     ip = input_json["ip"]
+    body = f"Ip {ip} has been unblocked"
     _delete_rows_from_table(ip)
-    _send_email_unblock(ip)
+    subject = "Unblock IP"
+    _send_email(subject, body)
     return make_response(jsonify(f"Unlocked: {ip}"), 200)
 
 
