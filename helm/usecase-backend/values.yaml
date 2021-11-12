@@ -8,7 +8,7 @@ image:
   repository: tropnikovvl/usecase-backend
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: v11
+  tag: v21
 
 imagePullSecrets: []
 nameOverride: ""
@@ -84,8 +84,13 @@ affinity: {}
 Secret:
   DB_USER: c3RvbG9uCg==
   DB_PASSWORD: c3RvbG9uCg==
+  MAIL_USERNAME: YmxhY2tsaXN0ZWRkZXZAeWFuZGV4LmNvbQo=
+  MAIL_PASSWORD: VzdrcHpSdmVaTFFpN3p1cgo=
 
 ConfigMap:
   DB_NAME: "simple_db"
   DB_HOST: "stolon-proxy"
   DB_PORT: "5432"
+  MAIL_SERVER: "smtp.yandex.ru"
+  MAIL_PORT: "587"
+  MAIL_RECIPIENT: "blacklisteddev@yandex.com"

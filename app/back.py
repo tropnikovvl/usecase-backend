@@ -5,6 +5,7 @@ import sys
 
 import psycopg2
 from flask import Flask, jsonify, make_response, redirect, request, url_for
+from flask_mail import Mail, Message
 from prometheus_flask_exporter import PrometheusMetrics
 from psycopg2 import Error
 
@@ -14,6 +15,12 @@ db_pass = os.environ.get("DB_PASSWORD").rstrip()
 db_host = os.environ.get("DB_HOST").rstrip()
 db_port = os.environ.get("DB_PORT").rstrip()
 db_table = "BLACKLIST"
+
+mail_server = os.environ.get("MAIL_SERVER").rstrip()
+mail_port = int(os.environ.get("MAIL_PORT").rstrip())
+mail_username = os.environ.get("MAIL_USERNAME").rstrip()
+mail_password = os.environ.get("MAIL_PASSWORD").rstrip()
+mail_recipient = os.environ.get("MAIL_RECIPIENT").rstrip()
 
 # test
 
@@ -125,8 +132,43 @@ def _delete_rows_from_table(ip):
             logging.info("Connection to PostgreSQL closed")
 
 
+def _send_email_block(ip):
+    msg = Message(
+        subject="Block IP",
+        recipients=[mail_recipient],
+        body=(f"Ip {ip} has been blocked"),
+        sender=mail_username,
+    )
+    with app.app_context():
+        mail.send(msg)
+    logging.info("Email has been send")
+    return "Message sent!"
+
+
+def _send_email_unblock(ip):
+    msg = Message(
+        subject="Unblock IP",
+        recipients=[mail_recipient],
+        body=(f"Ip {ip} has been unblocked"),
+        sender=mail_username,
+    )
+    with app.app_context():
+        mail.send(msg)
+    logging.info("Email has been send")
+    return "Message sent!"
+
+
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
+
+app.config["MAIL_SERVER"] = mail_server
+app.config["MAIL_PORT"] = mail_port
+app.config["MAIL_USERNAME"] = mail_username
+app.config["MAIL_PASSWORD"] = mail_password
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USE_SSL"] = False
+
+mail = Mail(app)
 
 
 @app.route("/")
@@ -146,6 +188,7 @@ def add_to_blacklist():
     date = input_json["date"]
     path = input_json["path"]
     _insert_data_to_table(ip, date, path)
+    _send_email_block(ip)
     return make_response(jsonify(input_json), 200)
 
 
@@ -166,6 +209,7 @@ def unlock():
     input_json = request.get_json(force=True)
     ip = input_json["ip"]
     _delete_rows_from_table(ip)
+    _send_email_unblock(ip)
     return make_response(jsonify(f"Unlocked: {ip}"), 200)
 
 
