@@ -25,15 +25,6 @@ mail_use_tls = eval(os.environ.get("MAIL_USE_TLS").rstrip())
 mail_use_ssl = eval(os.environ.get("MAIL_USE_SSL").rstrip())
 
 
-# test
-
-# db_name = "test_db"
-# db_user = "root"
-# db_pass = "root"
-# db_host = "192.168.1.61"
-# db_port = "5432"
-
-
 def _connect_to_db():
     conn = psycopg2.connect(
         dbname=db_name,

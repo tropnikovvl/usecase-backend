@@ -21,17 +21,23 @@ It accepts API queries and based on them blocks or unblocks the user and sends a
 Your computer must have the following settings installed and configured:
 - python3
 - pip3
+- Helm
 
 ## How to install automatically
-- bash install.sh
+```shell
+bash install.sh
+```
 
 ## How to install Manually
 
 **deploy Kubernetes:**
-- helm upgrade -i -n dev -f helm/usecase-backend/values.yaml backend helm/usecase-backend
+```shell
+helm upgrade -i -n dev -f helm/usecase-backend/values.yaml backend helm/usecase-backend
+```
 
 **deploy Docker (example):**
-- docker run --rm -d --name backend \
+```shell
+docker run --rm -d --name backend \
 -e DB_USER="root" \
 -e DB_PASSWORD="root" \
 -e DB_NAME="test_db" \
@@ -46,3 +52,4 @@ Your computer must have the following settings installed and configured:
 -e MAIL_PASSWORD="your_main_password" \
 -p 8080:8080 \
 tropnikovvl/usecase-backend:latest
+```
